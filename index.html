@@ -371,7 +371,8 @@ const DOC_TYPES = [
 const DEMO_COMPANIES = [
   { id: 'shed', name: 'The Shed', logo: '🏠' },
   { id: 'bloom', name: 'Bloom Academy', logo: '🌸' },
-  { id: 'trail', name: 'Trail Outdoor', logo: '⛰️' }
+  { id: 'trail', name: 'Trail Outdoor', logo: '⛰️' },
+  { id: 'ridge', name: 'Ridge Camps', logo: '🏕️' }
 ];
 
 let state = {
@@ -410,7 +411,13 @@ function loadState() {
   }
   if (!state.invites.length) {
     state.invites = [
-      { id: 'inv1', companyId: 'shed', companyName: 'The Shed', status: 'pending' }
+      { id: 'inv1', companyId: 'shed', companyName: 'The Shed', status: 'pending' },
+      { id: 'inv2', companyId: 'bloom', companyName: 'Bloom Academy', status: 'pending' }
+    ];
+  }
+  if (!state.requests.length) {
+    state.requests = [
+      { id: 'req1', companyId: 'shed', companyName: 'The Shed', items: ['bank'], status: 'pending', type: 'payroll' }
     ];
   }
 }
@@ -584,7 +591,7 @@ function renderHomeTab() {
         <div class="card-title">Document requests</div>
         ${pendingRequests.map(req => `
           <div style="margin-top:12px;">
-            <strong>${req.companyName}</strong> is requesting: ${req.items.join(', ')}
+            <strong>${req.companyName}</strong> is requesting: ${req.items.map(i => i === 'bank' ? 'Bank details (for payroll)' : i).join(', ')}
             <div style="margin-top:8px; display:flex; gap:8px;">
               <button class="btn btn-primary" style="width:auto; padding:8px 14px; font-size:14px;" onclick="approveRequest('${req.id}')">Share</button>
               <button class="btn btn-secondary" style="width:auto; padding:8px 14px; font-size:14px;" onclick="declineRequest('${req.id}')">Decline</button>
