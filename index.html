@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Basecamp — Outdoor Educators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFF8E7;
+  --cream: #FFDF97;
+  --orange: #FF5E1A;
+  --orange-dark: #E04E0F;
+  --navy: #172C36;
+  --navy-light: #2A4452;
+  --text: #172C36;
+  --muted: #6B7C85;
+  --white: #FFFFFF;
+  --card: #FFFFFF;
+  --border: #E8E0D0;
+  --success: #2E7D32;
+  --warning: #F9A825;
+  --danger: #C62828;
+  --radius: 16px;
+  --shadow: 0 4px 24px rgba(23,44,54,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Outfit', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+/* Homepage */
+.homepage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+}
+.logo {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+.logo span { color: var(--orange); }
+.tagline {
+  font-size: 18px;
+  color: var(--muted);
+  margin-bottom: 48px;
+  font-weight: 400;
+}
+.cta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+.btn {
+  display: block;
+  width: 100%;
+  padding: 18px 24px;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.btn-primary {
+  background: var(--orange);
+  color: white;
+}
+.btn-primary:hover { background: var(--orange-dark); }
+.btn-secondary {
+  background: white;
+  color: var(--navy);
+  border: 2px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--orange); }
+.login-link {
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.login-link a { color: var(--orange); text-decoration: none; font-weight: 500; }
+
+/* Auth screens */
+.auth-screen {
+  padding: 24px;
+  min-height: 100vh;
+}
+.auth-screen h2 { font-size: 28px; margin-bottom: 8px; }
+.auth-screen p { color: var(--muted); margin-bottom: 32px; }
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--navy);
+}
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  background: white;
+  color: var(--text);
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: var(--orange);
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 15px;
+  margin-bottom: 24px;
+  cursor: pointer;
+}
+
+/* Dashboard */
+.dashboard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+.header {
+  padding: 16px 20px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header h1 { font-size: 20px; font-weight: 600; }
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 8px 0 12px;
+  z-index: 100;
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+.tab.active { color: var(--orange); }
+.tab svg { width: 24px; height: 24px; }
+
+/* Cards & lists */
+.card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.card-title { font-weight: 600; margin-bottom: 4px; }
+.card-sub { font-size: 14px; color: var(--muted); }
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-success { background: #E8F5E9; color: var(--success); }
+.badge-warning { background: #FFF8E1; color: #F57F17; }
+.badge-danger { background: #FFEBEE; color: var(--danger); }
+.badge-neutral { background: #F5F5F5; color: var(--muted); }
+
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--muted);
+}
+.empty-state h3 { color: var(--navy); margin-bottom: 8px; font-weight: 500; }
+
+/* Document list */
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.doc-item:last-child { border-bottom: none; }
+.doc-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--cream);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.doc-info { flex: 1; }
+.doc-name { font-weight: 500; }
+.doc-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(23,44,54,0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+}
+.modal {
+  background: white;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 20px 20px 0 0;
+  padding: 24px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.modal h3 { margin-bottom: 16px; font-size: 20px; }
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+.modal-actions .btn { flex: 1; }
+
+/* Sharing */
+.company-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+.share-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 15px;
+}
+.share-toggle:last-child { border-bottom: none; }
+
+/* Calendar simple */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-top: 12px;
+}
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  background: white;
+  border: 1px solid var(--border);
+}
+.cal-day.unavailable { background: #FFEBEE; color: var(--danger); }
+.cal-day.available { background: #E8F5E9; }
+
+/* Work log */
+.log-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.log-item:last-child { border-bottom: none; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.toast.show { opacity: 1; }
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin: 20px 0 10px;
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DOC_TYPES = [
+  { id: 'scrc', name: 'SCRC / Police Check', icon: '🛡️' },
+  { id: 'firstaid', name: 'First Aid', icon: '🩹' },
+  { id: 'lifeguard', name: 'Lifeguard', icon: '🏊' },
+  { id: 'kayaking', name: 'Kayaking', icon: '🛶' },
+  { id: 'climbing', name: 'Rock Climbing', icon: '🧗' },
+  { id: 'wfr', name: 'WFR', icon: '🏕️' },
+  { id: 'lnt', name: 'Leave No Trace', icon: '🌿' },
+  { id: 'hkid', name: 'HKID', icon: '🪪' },
+  { id: 'passport', name: 'Passport', icon: '📘' },
+  { id: 'visa', name: 'Visa', icon: '📄' },
+  { id: 'contract', name: 'Contract', icon: '📝' },
+  { id: 'other', name: 'Other', icon: '📎' }
+];
+
+const DEMO_COMPANIES = [
+  { id: 'shed', name: 'The Shed', logo: '🏠' },
+  { id: 'bloom', name: 'Bloom Academy', logo: '🌸' },
+  { id: 'trail', name: 'Trail Outdoor', logo: '⛰️' }
+];
+
+let state = {
+  user: null,
+  view: 'home', // home, login, signup-educator, signup-company, dashboard
+  tab: 'home',
+  documents: [],
+  workLogs: [],
+  companies: [],
+  invites: [],
+  requests: [],
+  profile: {
+    name: '',
+    email: '',
+    photo: '',
+    bio: '',
+    specialties: '',
+    emergency: '',
+    health: { allergies: '', conditions: '', notes: '' },
+    bank: { name: '', bank: '', account: '', fps: '' },
+    availability: {} // date string -> 'unavailable' | 'available'
+  }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('basecamp_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) {}
+  // Seed demo data if first time
+  if (!state.companies.length) {
+    state.companies = DEMO_COMPANIES.map(c => ({ ...c, connected: false, shared: {} }));
+  }
+  if (!state.invites.length) {
+    state.invites = [
+      { id: 'inv1', companyId: 'shed', companyName: 'The Shed', status: 'pending' }
+    ];
+  }
+}
+
+function saveState() {
+  localStorage.setItem('basecamp_state', JSON.stringify(state));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (!state.user && state.view === 'home') {
+    app.innerHTML = renderHomepage();
+  } else if (state.view === 'login') {
+    app.innerHTML = renderLogin();
+  } else if (state.view === 'signup-educator') {
+    app.innerHTML = renderSignupEducator();
+  } else if (state.view === 'signup-company') {
+    app.innerHTML = renderSignupCompany();
+  } else if (state.user) {
+    app.innerHTML = renderDashboard();
+  } else {
+    state.view = 'home';
+    render();
+  }
+  attachListeners();
+}
+
+function renderHomepage() {
+  return `
+    <div class="homepage">
+      <div class="logo">Base<span>camp</span></div>
+      <div class="tagline">One place for outdoor educators<br>and the companies they work with</div>
+      <div class="cta-group">
+        <button class="btn btn-primary" onclick="goSignupEducator()">Sign up as Educator</button>
+        <button class="btn btn-secondary" onclick="goSignupCompany()">Sign up as Outdoor Company</button>
+      </div>
+      <div class="login-link">Already have an account? <a href="#" onclick="goLogin(); return false;">Log in</a></div>
+    </div>
+  `;
+}
+
+function renderLogin() {
+  return `
+    <div class="auth-screen">
+      <div class="back-link" onclick="goHome()">← Back</div>
+      <h2>Welcome back</h2>
+      <p>Log in to your Basecamp account</p>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">Log in</button>
+      <div class="login-link" style="text-align:center; margin-top:16px;">
+        <a href="#" onclick="goSignupEducator(); return false;">Create educator account</a>
+      </div>
+    </div>
+  `;
+}
+
+function renderSignupEducator() {
+  return `
+    <div class="auth-screen">
+      <div class="back-link" onclick="goHome()">← Back</div>
+      <h2>Create educator account</h2>
+      <p>Takes less than a minute</p>
+      <div class="form-group">
+        <label>Full name</label>
+        <input type="text" id="signup-name" placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="Create a password">
+      </div>
+      <button class="btn btn-primary" onclick="doSignupEducator()">Create account</button>
+    </div>
+  `;
+}
+
+function renderSignupCompany() {
+  return `
+    <div class="auth-screen">
+      <div class="back-link" onclick="goHome()">← Back</div>
+      <h2>Company account</h2>
+      <p>Coming soon in the next phase.<br>For now, explore the educator side.</p>
+      <button class="btn btn-primary" onclick="goSignupEducator()">Create educator account instead</button>
+    </div>
+  `;
+}
+
+function renderDashboard() {
+  const tabs = [
+    { id: 'home', label: 'Home', icon: homeIcon },
+    { id: 'documents', label: 'Documents', icon: docIcon },
+    { id: 'share', label: 'Share', icon: shareIcon },
+    { id: 'pay', label: 'Pay', icon: payIcon },
+    { id: 'profile', label: 'Profile', icon: profileIcon }
+  ];
+  return `
+    <div class="dashboard">
+      <div class="header">
+        <h1>${tabTitle()}</h1>
+        <div style="font-size:14px; color:var(--muted);">${state.profile.name || 'Educator'}</div>
+      </div>
+      <div class="content" id="tab-content">
+        ${renderTabContent()}
+      </div>
+      <div class="tab-bar">
+        ${tabs.map(t => `
+          <button class="tab ${state.tab === t.id ? 'active' : ''}" onclick="switchTab('${t.id}')">
+            ${t.icon()}
+            <span>${t.label}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function tabTitle() {
+  const titles = { home: 'Home', documents: 'Documents', share: 'Sharing', pay: 'Work & Pay', profile: 'Profile' };
+  return titles[state.tab] || 'Basecamp';
+}
+
+function renderTabContent() {
+  switch(state.tab) {
+    case 'home': return renderHomeTab();
+    case 'documents': return renderDocumentsTab();
+    case 'share': return renderShareTab();
+    case 'pay': return renderPayTab();
+    case 'profile': return renderProfileTab();
+    default: return '';
+  }
+}
+
+function renderHomeTab() {
+  const pendingInvites = state.invites.filter(i => i.status === 'pending');
+  const pendingRequests = state.requests.filter(r => r.status === 'pending');
+  const completeness = calculateCompleteness();
+  return `
+    ${pendingInvites.length ? `
+      <div class="card" style="border-left: 4px solid var(--orange);">
+        <div class="card-title">Pending invitations</div>
+        ${pendingInvites.map(inv => `
+          <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong>${inv.companyName}</strong>
+              <div class="card-sub">wants to connect with you</div>
+            </div>
+            <button class="btn btn-primary" style="width:auto; padding:10px 16px; font-size:14px;" onclick="acceptInvite('${inv.id}')">Accept</button>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+    ${pendingRequests.length ? `
+      <div class="card" style="border-left: 4px solid var(--warning);">
+        <div class="card-title">Document requests</div>
+        ${pendingRequests.map(req => `
+          <div style="margin-top:12px;">
+            <strong>${req.companyName}</strong> is requesting: ${req.items.join(', ')}
+            <div style="margin-top:8px; display:flex; gap:8px;">
+              <button class="btn btn-primary" style="width:auto; padding:8px 14px; font-size:14px;" onclick="approveRequest('${req.id}')">Share</button>
+              <button class="btn btn-secondary" style="width:auto; padding:8px 14px; font-size:14px;" onclick="declineRequest('${req.id}')">Decline</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+    <div class="card">
+      <div class="card-title">Profile completeness</div>
+      <div style="margin-top:8px; height:8px; background:#eee; border-radius:4px; overflow:hidden;">
+        <div style="width:${completeness}%; height:100%; background:var(--orange); border-radius:4px;"></div>
+      </div>
+      <div class="card-sub" style="margin-top:6px;">${completeness}% complete</div>
+    </div>
+    <div class="empty-state" style="padding:32px 0;">
+      <h3>Welcome to Basecamp</h3>
+      <p>Upload your documents, set availability, and share only what you choose with each company.</p>
+    </div>
+  `;
+}
+
+function calculateCompleteness() {
+  let score = 0;
+  if (state.profile.name) score += 15;
+  if (state.profile.bio) score += 10;
+  if (state.documents.length > 0) score += 25;
+  if (state.documents.some(d => d.type === 'scrc')) score += 15;
+  if (state.profile.bank.account) score += 15;
+  if (Object.keys(state.profile.availability).length > 0) score += 10;
+  if (state.profile.health.allergies || state.profile.health.conditions) score += 10;
+  return Math.min(100, score);
+}
+
+function renderDocumentsTab() {
+  return `
+    <button class="btn btn-primary" onclick="openUploadModal()" style="margin-bottom:16px;">+ Upload document</button>
+    ${state.documents.length === 0 ? `
+      <div class="empty-state">
+        <h3>No documents yet</h3>
+        <p>Upload your certifications, SCRC, HKID, and more. You control who sees them.</p>
+      </div>
+    ` : `
+      <div class="card">
+        ${state.documents.map(doc => `
+          <div class="doc-item">
+            <div class="doc-icon">${getDocIcon(doc.type)}</div>
+            <div class="doc-info">
+              <div class="doc-name">${getDocName(doc.type)}</div>
+              <div class="doc-meta">
+                ${doc.expiry ? 'Expires ' + formatDate(doc.expiry) : 'No expiry'} 
+                ${doc.verified ? ' · Verified' : ''}
+              </div>
+            </div>
+            <button onclick="deleteDoc('${doc.id}')" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:18px;">×</button>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+}
+
+function getDocIcon(type) {
+  return DOC_TYPES.find(d => d.id === type)?.icon || '📎';
+}
+function getDocName(type) {
+  return DOC_TYPES.find(d => d.id === type)?.name || type;
+}
+
+function renderShareTab() {
+  const connected = state.companies.filter(c => c.connected);
+  const pending = state.invites.filter(i => i.status === 'pending');
+  return `
+    ${pending.length ? `
+      <div class="section-title">Pending invitations</div>
+      ${pending.map(inv => `
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${inv.companyName}</strong>
+            <button class="btn btn-primary" style="width:auto; padding:8px 16px; font-size:14px;" onclick="acceptInvite('${inv.id}')">Review & Accept</button>
+          </div>
+        </div>
+      `).join('')}
+    ` : ''}
+    <div class="section-title">Connected companies</div>
+    ${connected.length === 0 ? `
+      <div class="empty-state">
+        <h3>No companies yet</h3>
+        <p>When a company invites you, it will appear here. You choose exactly what to share.</p>
+      </div>
+    ` : connected.map(c => `
+      <div class="company-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <strong>${c.logo} ${c.name}</strong>
+          <span class="badge badge-success">Connected</span>
+        </div>
+        <div class="section-title" style="margin-top:0;">Shared with this company</div>
+        ${DOC_TYPES.slice(0,6).map(dt => `
+          <div class="share-toggle">
+            <span>${dt.name}</span>
+            <input type="checkbox" ${c.shared[dt.id] ? 'checked' : ''} onchange="toggleShare('${c.id}', '${dt.id}', this.checked)">
+          </div>
+        `).join('')}
+        <div class="share-toggle">
+          <span>Bank details</span>
+          <input type="checkbox" ${c.shared.bank ? 'checked' : ''} onchange="toggleShare('${c.id}', 'bank', this.checked)">
+        </div>
+        <div class="share-toggle">
+          <span>Health info</span>
+          <input type="checkbox" ${c.shared.health ? 'checked' : ''} onchange="toggleShare('${c.id}', 'health', this.checked)">
+        </div>
+        <div class="share-toggle">
+          <span>Availability</span>
+          <input type="checkbox" ${c.shared.availability ? 'checked' : ''} onchange="toggleShare('${c.id}', 'availability', this.checked)">
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderPayTab() {
+  return `
+    <button class="btn btn-primary" onclick="openWorkLogModal()" style="margin-bottom:12px;">+ Add work log</button>
+    <button class="btn btn-secondary" onclick="openVoiceLog()" style="margin-bottom:16px;">🎤 Log with voice note</button>
+    ${state.workLogs.length === 0 ? `
+      <div class="empty-state">
+        <h3>No work logs yet</h3>
+        <p>Track sessions for freelancing. Voice notes make it fast.</p>
+      </div>
+    ` : `
+      <div class="card">
+        ${state.workLogs.slice().reverse().map(log => `
+          <div class="log-item">
+            <div style="display:flex; justify-content:space-between;">
+              <strong>${log.companyName}</strong>
+              <span class="badge badge-neutral">${log.role} · ${log.sessionType}</span>
+            </div>
+            <div class="card-sub">${formatDate(log.date)} ${log.notes ? '· ' + log.notes : ''}</div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+}
+
+function renderProfileTab() {
+  return `
+    <div class="section-title">Account</div>
+    <div class="card">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="prof-name" value="${escapeHtml(state.profile.name)}" onchange="updateProfile('name', this.value)">
+      </div>
+      <div class="form-group">
+        <label>Bio</label>
+        <textarea id="prof-bio" rows="3" onchange="updateProfile('bio', this.value)">${escapeHtml(state.profile.bio)}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Specialties</label>
+        <input type="text" id="prof-spec" value="${escapeHtml(state.profile.specialties)}" placeholder="Kayaking, climbing, forest school..." onchange="updateProfile('specialties', this.value)">
+      </div>
+      <div class="form-group">
+        <label>Emergency contact</label>
+        <input type="text" id="prof-emerg" value="${escapeHtml(state.profile.emergency)}" onchange="updateProfile('emergency', this.value)">
+      </div>
+    </div>
+
+    <div class="section-title">Health (private by default)</div>
+    <div class="card">
+      <div class="form-group">
+        <label>Allergies</label>
+        <input type="text" value="${escapeHtml(state.profile.health.allergies)}" onchange="updateHealth('allergies', this.value)">
+      </div>
+      <div class="form-group">
+        <label>Medical conditions</label>
+        <input type="text" value="${escapeHtml(state.profile.health.conditions)}" onchange="updateHealth('conditions', this.value)">
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea rows="2" onchange="updateHealth('notes', this.value)">${escapeHtml(state.profile.health.notes)}</textarea>
+      </div>
+    </div>
+
+    <div class="section-title">Bank details</div>
+    <div class="card">
+      <div class="form-group">
+        <label>Account name</label>
+        <input type="text" value="${escapeHtml(state.profile.bank.name)}" onchange="updateBank('name', this.value)">
+      </div>
+      <div class="form-group">
+        <label>Bank</label>
+        <input type="text" value="${escapeHtml(state.profile.bank.bank)}" onchange="updateBank('bank', this.value)">
+      </div>
+      <div class="form-group">
+        <label>Account number</label>
+        <input type="text" value="${escapeHtml(state.profile.bank.account)}" onchange="updateBank('account', this.value)">
+      </div>
+      <div class="form-group">
+        <label>FPS ID (optional)</label>
+        <input type="text" value="${escapeHtml(state.profile.bank.fps)}" onchange="updateBank('fps', this.value)">
+      </div>
+    </div>
+
+    <div class="section-title">Availability</div>
+    <div class="card">
+      <p class="card-sub" style="margin-bottom:8px;">Tap days to mark unavailable</p>
+      <div class="calendar-grid" id="calendar"></div>
+    </div>
+
+    <button class="btn btn-secondary" onclick="logout()" style="margin-top:24px;">Log out</button>
+  `;
+}
+
+// Icons
+function homeIcon() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`; }
+function docIcon() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`; }
+function shareIcon() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`; }
+function payIcon() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`; }
+function profileIcon() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`; }
+
+// Actions
+function goHome() { state.view = 'home'; render(); }
+function goLogin() { state.view = 'login'; render(); }
+function goSignupEducator() { state.view = 'signup-educator'; render(); }
+function goSignupCompany() { state.view = 'signup-company'; render(); }
+
+function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-password').value;
+  if (!email || !pass) { showToast('Please fill in all fields'); return; }
+  // Simple mock: any email works if previously signed up, or just set
+  state.user = { email };
+  if (!state.profile.name) state.profile.name = email.split('@')[0];
+  state.profile.email = email;
+  state.view = 'dashboard';
+  state.tab = 'home';
+  saveState();
+  showToast('Welcome back');
+  render();
+}
+
+function doSignupEducator() {
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pass = document.getElementById('signup-password').value;
+  if (!name || !email || !pass) { showToast('Please fill in all fields'); return; }
+  state.user = { email };
+  state.profile.name = name;
+  state.profile.email = email;
+  state.view = 'dashboard';
+  state.tab = 'home';
+  saveState();
+  showToast('Account created');
+  render();
+}
+
+function switchTab(tab) {
+  state.tab = tab;
+  saveState();
+  render();
+  if (tab === 'profile') setTimeout(renderCalendar, 50);
+}
+
+function logout() {
+  state.user = null;
+  state.view = 'home';
+  saveState();
+  render();
+}
+
+function updateProfile(field, value) {
+  state.profile[field] = value;
+  saveState();
+}
+function updateHealth(field, value) {
+  state.profile.health[field] = value;
+  saveState();
+}
+function updateBank(field, value) {
+  state.profile.bank[field] = value;
+  saveState();
+}
+
+function openUploadModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Upload document</h3>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="doc-type">
+          ${DOC_TYPES.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>File</label>
+        <input type="file" id="doc-file" accept="image/*,.pdf">
+      </div>
+      <div class="form-group">
+        <label>Expiry date (if any)</label>
+        <input type="date" id="doc-expiry">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveDocument()">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function saveDocument() {
+  const type = document.getElementById('doc-type').value;
+  const expiry = document.getElementById('doc-expiry').value;
+  const fileInput = document.getElementById('doc-file');
+  const doc = {
+    id: 'doc_' + Date.now(),
+    type,
+    expiry: expiry || null,
+    fileName: fileInput.files[0]?.name || 'document',
+    verified: Math.random() > 0.3, // mock
+    uploadedAt: new Date().toISOString()
+  };
+  state.documents.push(doc);
+  saveState();
+  document.querySelector('.modal-overlay').remove();
+  showToast('Document uploaded');
+  render();
+}
+
+function deleteDoc(id) {
+  if (confirm('Remove this document?')) {
+    state.documents = state.documents.filter(d => d.id !== id);
+    saveState();
+    render();
+  }
+}
+
+function acceptInvite(id) {
+  const inv = state.invites.find(i => i.id === id);
+  if (!inv) return;
+  // Show share selection modal
+  const company = state.companies.find(c => c.id === inv.companyId) || { id: inv.companyId, name: inv.companyName, logo: '🏢', connected: false, shared: {} };
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Share with ${inv.companyName}</h3>
+      <p class="card-sub" style="margin-bottom:16px;">Choose what you want them to see. You can change this anytime.</p>
+      ${DOC_TYPES.slice(0,5).map(dt => `
+        <div class="share-toggle">
+          <span>${dt.name}</span>
+          <input type="checkbox" id="share-${dt.id}" ${state.documents.some(d => d.type === dt.id) ? '' : 'disabled'}>
+        </div>
+      `).join('')}
+      <div class="share-toggle">
+        <span>Bank details</span>
+        <input type="checkbox" id="share-bank">
+      </div>
+      <div class="share-toggle">
+        <span>Health info</span>
+        <input type="checkbox" id="share-health">
+      </div>
+      <div class="share-toggle">
+        <span>Availability</span>
+        <input type="checkbox" id="share-avail">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmAcceptInvite('${id}')">Connect & Share</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function confirmAcceptInvite(id) {
+  const inv = state.invites.find(i => i.id === id);
+  if (!inv) return;
+  let company = state.companies.find(c => c.id === inv.companyId);
+  if (!company) {
+    company = { id: inv.companyId, name: inv.companyName, logo: '🏢', connected: true, shared: {} };
+    state.companies.push(company);
+  }
+  company.connected = true;
+  company.shared = company.shared || {};
+  DOC_TYPES.slice(0,5).forEach(dt => {
+    const cb = document.getElementById('share-' + dt.id);
+    if (cb && cb.checked) company.shared[dt.id] = true;
+  });
+  if (document.getElementById('share-bank')?.checked) company.shared.bank = true;
+  if (document.getElementById('share-health')?.checked) company.shared.health = true;
+  if (document.getElementById('share-avail')?.checked) company.shared.availability = true;
+  inv.status = 'accepted';
+  saveState();
+  document.querySelector('.modal-overlay').remove();
+  showToast('Connected with ' + inv.companyName);
+  render();
+}
+
+function toggleShare(companyId, key, value) {
+  const c = state.companies.find(x => x.id === companyId);
+  if (c) {
+    c.shared = c.shared || {};
+    c.shared[key] = value;
+    saveState();
+  }
+}
+
+function openWorkLogModal() {
+  const connected = state.companies.filter(c => c.connected);
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Add work log</h3>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="log-date" value="${new Date().toISOString().split('T')[0]}">
+      </div>
+      <div class="form-group">
+        <label>Company</label>
+        <select id="log-company">
+          ${connected.length ? connected.map(c => `<option value="${c.id}">${c.name}</option>`).join('') : '<option>No companies connected</option>'}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="log-role">
+          <option value="Lead">Lead</option>
+          <option value="Support">Support</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Session type</label>
+        <select id="log-type">
+          <option value="Half day">Half day</option>
+          <option value="Full day">Full day</option>
+          <option value="Overnight">Overnight</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <input type="text" id="log-notes" placeholder="Kayaking at Sai Kung...">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveWorkLog()">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function saveWorkLog() {
+  const date = document.getElementById('log-date').value;
+  const companyId = document.getElementById('log-company').value;
+  const company = state.companies.find(c => c.id === companyId);
+  const log = {
+    id: 'log_' + Date.now(),
+    date,
+    companyId,
+    companyName: company?.name || 'Unknown',
+    role: document.getElementById('log-role').value,
+    sessionType: document.getElementById('log-type').value,
+    notes: document.getElementById('log-notes').value
+  };
+  state.workLogs.push(log);
+  saveState();
+  document.querySelector('.modal-overlay').remove();
+  showToast('Work log saved');
+  render();
+}
+
+function openVoiceLog() {
+  showToast('Voice note feature: record → transcript → confirm (simulated)');
+  // Mock: open a modal with pre-filled transcript
+  setTimeout(() => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal">
+        <h3>Voice note transcript</h3>
+        <p class="card-sub" style="margin-bottom:12px;">"Saturday 12 October, The Shed, lead, full day, kayaking at Sai Kung"</p>
+        <div class="form-group">
+          <label>Confirm details</label>
+          <input type="text" id="voice-confirm" value="The Shed · Lead · Full day · Kayaking">
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Discard</button>
+          <button class="btn btn-primary" onclick="saveVoiceLog()">Save log</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }, 800);
+}
+
+function saveVoiceLog() {
+  const log = {
+    id: 'log_' + Date.now(),
+    date: new Date().toISOString().split('T')[0],
+    companyId: 'shed',
+    companyName: 'The Shed',
+    role: 'Lead',
+    sessionType: 'Full day',
+    notes: 'Kayaking (from voice note)'
+  };
+  state.workLogs.push(log);
+  saveState();
+  document.querySelector('.modal-overlay')?.remove();
+  showToast('Voice log saved');
+  render();
+}
+
+function approveRequest(id) {
+  const req = state.requests.find(r => r.id === id);
+  if (req) {
+    req.status = 'approved';
+    // Auto-share the items
+    const c = state.companies.find(x => x.id === req.companyId);
+    if (c) {
+      req.items.forEach(item => { c.shared[item] = true; });
+    }
+    saveState();
+    showToast('Shared with ' + req.companyName);
+    render();
+  }
+}
+function declineRequest(id) {
+  const req = state.requests.find(r => r.id === id);
+  if (req) {
+    req.status = 'declined';
+    saveState();
+    render();
+  }
+}
+
+function renderCalendar() {
+  const cal = document.getElementById('calendar');
+  if (!cal) return;
+  const today = new Date();
+  let html = '';
+  for (let i = 0; i < 28; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const key = d.toISOString().split('T')[0];
+    const status = state.profile.availability[key];
+    html += `<div class="cal-day ${status || ''}" onclick="toggleAvail('${key}')">${d.getDate()}</div>`;
+  }
+  cal.innerHTML = html;
+}
+
+function toggleAvail(date) {
+  const current = state.profile.availability[date];
+  if (current === 'unavailable') {
+    delete state.profile.availability[date];
+  } else {
+    state.profile.availability[date] = 'unavailable';
+  }
+  saveState();
+  renderCalendar();
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"');
+}
+
+function attachListeners() {
+  // Re-render calendar if on profile
+  if (state.tab === 'profile') setTimeout(renderCalendar, 50);
+}
+
+// Init
+loadState();
+if (state.user) {
+  state.view = 'dashboard';
+}
+render();
+</script>
+</body>
+</html>
