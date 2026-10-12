@@ -368,7 +368,19 @@ const DOC_TYPES = [
   { id: 'other', name: 'Other', icon: '📎' }
 ];
 
+const SHED_RATES = {
+  'Lead': { 'Half day': 700, 'Full day': 1400, 'Quarter day': 500, 'Overnight': 1000 },
+  'Support': { 'Half day': 500, 'Full day': 1000, 'Quarter day': 350, 'Overnight': 700 },
+  'Specialist': { 'Full day': 1300 },
+  'Junior': { 'Allowance': 100 }
+};
+
 const DEMO_COMPANIES = [
+  { id: 'shed', name: 'The Shed', logo: '🏠' },
+  { id: 'bloom', name: 'Bloom Academy', logo: '🌸' },
+  { id: 'trail', name: 'Trail Outdoor', logo: '⛰️' },
+  { id: 'ridge', name: 'Ridge Camps', logo: '🏕️' }
+];
   { id: 'shed', name: 'The Shed', logo: '🏠' },
   { id: 'bloom', name: 'Bloom Academy', logo: '🌸' },
   { id: 'trail', name: 'Trail Outdoor', logo: '⛰️' },
@@ -728,7 +740,7 @@ function renderPayTab() {
           <div class="log-item">
             <div style="display:flex; justify-content:space-between;">
               <strong>${log.companyName}</strong>
-              <span class="badge badge-neutral">${log.role} · ${log.sessionType}</span>
+              <span class="badge badge-neutral">${log.role} · ${log.sessionType}${log.rate ? ' · HK$' + log.rate : ''}</span>
             </div>
             <div class="card-sub">${formatDate(log.date)} ${log.notes ? '· ' + log.notes : ''}</div>
           </div>
@@ -1202,20 +1214,24 @@ function openWorkLogModal() {
         </select>
       </div>
       <div class="form-group">
-        <label>Role</label>
-        <select id="log-role">
-          <option value="Lead">Lead</option>
-          <option value="Support">Support</option>
-        </select>
-      </div>
-      <div class="form-group">
         <label>Session type</label>
-        <select id="log-type">
+        <select id="log-type" onchange="updateRatePreview()">
           <option value="Half day">Half day</option>
           <option value="Full day">Full day</option>
+          <option value="Quarter day">Quarter day</option>
           <option value="Overnight">Overnight</option>
         </select>
       </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="log-role" onchange="updateRatePreview()">
+          <option value="Lead">Lead Mentor</option>
+          <option value="Support">Support Mentor</option>
+          <option value="Specialist">Specialist</option>
+          <option value="Junior">Junior Mentor</option>
+        </select>
+      </div>
+      <div id="rate-preview" class="card-sub" style="margin:8px 0; padding:8px; background:#f0f8ff; border-radius:6px;">Select role and type to see rate</div>
       <div class="form-group">
         <label>Notes (optional)</label>
         <input type="text" id="log-notes" placeholder="Kayaking at Sai Kung...">
@@ -1227,25 +1243,43 @@ function openWorkLogModal() {
     </div>
   `;
   document.body.appendChild(overlay);
+  setTimeout(updateRatePreview, 50);
+}
+
+function updateRatePreview() {
+  const role = document.getElementById('log-role')?.value;
+  const type = document.getElementById('log-type')?.value;
+  const preview = document.getElementById('rate-preview');
+  if (!preview || !role || !type) return;
+  const rate = SHED_RATES[role]?.[type] || SHED_RATES[role]?.['Allowance'];
+  if (rate) {
+    preview.textContent = `The Shed rate: HK$${rate}${type === 'Overnight' ? ' (additional per night)' : ''}`;
+  } else {
+    preview.textContent = 'Rate not defined for this combination';
+  }
 }
 
 function saveWorkLog() {
   const date = document.getElementById('log-date').value;
   const companyId = document.getElementById('log-company').value;
   const company = state.companies.find(c => c.id === companyId);
+  const role = document.getElementById('log-role').value;
+  const sessionType = document.getElementById('log-type').value;
+  const rate = SHED_RATES[role]?.[sessionType] || SHED_RATES[role]?.['Allowance'] || 0;
   const log = {
     id: 'log_' + Date.now(),
     date,
     companyId,
     companyName: company?.name || 'Unknown',
-    role: document.getElementById('log-role').value,
-    sessionType: document.getElementById('log-type').value,
+    role,
+    sessionType,
+    rate,
     notes: document.getElementById('log-notes').value
   };
   state.workLogs.push(log);
   saveState();
   document.querySelector('.modal-overlay').remove();
-  showToast('Work log saved');
+  showToast('Work log saved · HK$' + rate);
   render();
 }
 
