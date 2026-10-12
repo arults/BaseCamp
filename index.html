@@ -6,6 +6,7 @@
 <title>Basecamp — Outdoor Educators</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root {
   --bg: #FFF8E7;
@@ -635,7 +636,8 @@ function renderDocumentsTab() {
               <div class="doc-name">${getDocName(doc.type)}</div>
               <div class="doc-meta">
                 ${doc.expiry ? 'Expires ' + formatDate(doc.expiry) : 'No expiry'} 
-                ${doc.verified ? ' · Verified' : ''}
+                ${doc.nameMatch ? ' · Name match ✅' : ''}
+                ${doc.verified ? ' · Checked' : ' · Limited check'}
               </div>
             </div>
             <button onclick="deleteDoc('${doc.id}')" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:18px;">×</button>
@@ -881,7 +883,11 @@ function openUploadModal() {
       </div>
       <div class="form-group">
         <label>File</label>
-        <input type="file" id="doc-file" accept="image/*,.pdf">
+        <input type="file" id="doc-file" accept="image/*,.pdf" onchange="previewAndAnalyze()">
+      </div>
+      <div id="analysis-preview" style="margin:12px 0; padding:12px; background:#f9f9f9; border-radius:8px; display:none;">
+        <strong>Extracted information</strong>
+        <div id="analysis-content" class="card-sub" style="margin-top:6px;"></div>
       </div>
       <div class="form-group">
         <label>Expiry date (if any)</label>
@@ -889,29 +895,143 @@ function openUploadModal() {
       </div>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveDocument()">Save</button>
+        <button class="btn btn-primary" id="save-doc-btn" onclick="saveDocument()">Save</button>
       </div>
     </div>
   `;
   document.body.appendChild(overlay);
 }
 
+async function previewAndAnalyze() {
+  const fileInput = document.getElementById('doc-file');
+  const file = fileInput.files[0];
+  const preview = document.getElementById('analysis-preview');
+  const content = document.getElementById('analysis-content');
+  if (!file) { preview.style.display = 'none'; return; }
+
+  preview.style.display = 'block';
+  content.innerHTML = 'Reading document…';
+
+  if (!file.type.startsWith('image/')) {
+    content.innerHTML = 'PDF or non-image file — basic acceptance only. Image OCR works best for verification.';
+    return;
+  }
+
+  try {
+    const result = await Tesseract.recognize(file, 'eng', { logger: m => {} });
+    const text = result.data.text || '';
+    const analysis = analyzeDocumentText(text);
+    window._lastAnalysis = analysis;
+    window._lastExtractedText = text;
+
+    let html = '';
+    if (analysis.nameFound) {
+      const match = analysis.nameMatchesUser;
+      html += `<div>Name on document: <strong>${analysis.nameFound}</strong> ${match ? '✅ matches your profile' : '⚠️ does not match your profile name'}</div>`;
+    } else {
+      html += `<div>Name: not clearly found</div>`;
+    }
+    if (analysis.expiry) html += `<div>Expiry: <strong>${analysis.expiry}</strong></div>`;
+    if (analysis.issueDate) html += `<div>Issue / given date: ${analysis.issueDate}</div>`;
+    if (analysis.certType) html += `<div>Detected type: ${analysis.certType}</div>`;
+    html += `<div style="margin-top:6px; font-size:12px; color:#888;">Raw text length: ${text.length} chars</div>`;
+    content.innerHTML = html || 'No clear fields extracted.';
+
+    // Auto-fill expiry if found
+    if (analysis.expiry) {
+      const expInput = document.getElementById('doc-expiry');
+      if (expInput && !expInput.value) {
+        const d = parseLooseDate(analysis.expiry);
+        if (d) expInput.value = d.toISOString().split('T')[0];
+      }
+    }
+  } catch (err) {
+    content.innerHTML = 'Could not read document: ' + (err.message || 'unknown error');
+  }
+}
+
+function analyzeDocumentText(text) {
+  const lower = text.toLowerCase();
+  const userName = (state.profile.name || '').toLowerCase().trim();
+  const analysis = { nameFound: null, nameMatchesUser: false, expiry: null, issueDate: null, certType: null };
+
+  // Certificate type keywords
+  const typeMap = {
+    'scrc': 'SCRC / Police Check',
+    'sexual conviction': 'SCRC',
+    'first aid': 'First Aid',
+    'lifeguard': 'Lifeguard',
+    'kayak': 'Kayaking',
+    'climbing': 'Rock Climbing',
+    'wilderness first': 'WFR',
+    'leave no trace': 'LNT',
+    'hkid': 'HKID'
+  };
+  for (const [key, label] of Object.entries(typeMap)) {
+    if (lower.includes(key)) { analysis.certType = label; break; }
+  }
+
+  // Dates - look for common patterns
+  const datePatterns = [
+    /(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/g,
+    /(\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2})/g,
+    /(expiry|expires|valid until|valid to|exp\.?)[:\s]*([0-9\/\-\.]+)/gi,
+    /(issued|issue date|given)[:\s]*([0-9\/\-\.]+)/gi
+  ];
+  const dates = [];
+  datePatterns.forEach(p => {
+    let m;
+    while ((m = p.exec(text)) !== null) dates.push(m[1] || m[2]);
+  });
+  if (dates.length) {
+    analysis.expiry = dates.find(d => /expir|valid/i.test(text.slice(Math.max(0, text.indexOf(d)-20), text.indexOf(d)+20))) || dates[dates.length-1];
+    analysis.issueDate = dates[0];
+  }
+
+  // Name matching - simple: look for user's name parts
+  if (userName) {
+    const parts = userName.split(/\s+/).filter(Boolean);
+    const found = parts.some(p => p.length > 2 && lower.includes(p));
+    if (found) {
+      analysis.nameFound = state.profile.name;
+      analysis.nameMatchesUser = true;
+    } else {
+      // Try to extract a likely name line (capitalized words)
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 3 && l.length < 40);
+      const nameLine = lines.find(l => /^[A-Z][a-z]+(\s+[A-Z][a-z]+)+$/.test(l));
+      if (nameLine) analysis.nameFound = nameLine;
+    }
+  }
+
+  return analysis;
+}
+
+function parseLooseDate(str) {
+  if (!str) return null;
+  const cleaned = str.replace(/[^\d\/\-\.]/g, '');
+  const d = new Date(cleaned);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function saveDocument() {
   const type = document.getElementById('doc-type').value;
   const expiry = document.getElementById('doc-expiry').value;
   const fileInput = document.getElementById('doc-file');
+  const analysis = window._lastAnalysis || {};
   const doc = {
     id: 'doc_' + Date.now(),
     type,
-    expiry: expiry || null,
+    expiry: expiry || analysis.expiry || null,
     fileName: fileInput.files[0]?.name || 'document',
-    verified: Math.random() > 0.3, // mock
+    verified: !!(analysis.nameMatchesUser || analysis.certType),
+    nameMatch: analysis.nameMatchesUser || false,
+    extracted: analysis,
     uploadedAt: new Date().toISOString()
   };
   state.documents.push(doc);
   saveState();
   document.querySelector('.modal-overlay').remove();
-  showToast('Document uploaded');
+  showToast(doc.verified ? 'Document saved & checked' : 'Document saved (limited verification)');
   render();
 }
 
