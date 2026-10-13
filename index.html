@@ -312,7 +312,7 @@ body {
   border: 1px solid var(--border);
 }
 .cal-day.unavailable { background: #FFEBEE; color: var(--danger); }
-.cal-day.available { background: #E8F5E9; }
+.cal-day.past { opacity: 0.4; cursor: default; }
 
 /* Work log */
 .log-item {
@@ -985,14 +985,18 @@ async function previewAndAnalyze() {
       nameConfirm.style.display = 'none';
     }
 
-    // Type mismatch rejection
+    // Type mismatch - actionable message
     const selectedType = document.getElementById('doc-type').value;
     const typeReject = document.getElementById('type-reject');
     const selectedLabel = DOC_TYPES.find(d => d.id === selectedType)?.name || selectedType;
-    const isTypeMismatch = analysis.certType && !isTypeCompatible(selectedType, analysis.certType);
+    const isTypeMismatch = analysis.detectedTypeId && analysis.detectedTypeId !== selectedType;
     if (isTypeMismatch) {
       typeReject.style.display = 'block';
-      typeReject.innerHTML = `You're uploading the wrong document.<br>This does not appear to be a <strong>${selectedLabel}</strong>. Detected as: ${analysis.certType}. Upload rejected.`;
+      typeReject.innerHTML = `
+        You're uploading a <strong>${analysis.certType}</strong> document, but you selected <strong>${selectedLabel}</strong>.<br>
+        <button class="btn btn-secondary" style="margin-top:8px; width:auto; padding:8px 12px; font-size:14px;" onclick="document.getElementById('doc-type').value='${analysis.detectedTypeId}'; this.closest('#type-reject').style.display='none'; document.getElementById('save-doc-btn').disabled=false;">Change type to ${analysis.certType}</button>
+        <div style="margin-top:6px; font-size:13px;">Or re-upload the correct document.</div>
+      `;
       document.getElementById('save-doc-btn').disabled = true;
     } else {
       typeReject.style.display = 'none';
@@ -1032,52 +1036,64 @@ function isTypeCompatible(selectedId, detectedLabel) {
 function analyzeDocumentText(text) {
   const lower = text.toLowerCase();
   const userName = (state.profile.name || '').toLowerCase().trim();
-  const analysis = { nameFound: null, nameMatchesUser: false, expiry: null, issueDate: null, certType: null };
-
-  // Certificate type keywords
-  const typeMap = {
-    'scrc': 'SCRC / Police Check',
-    'sexual conviction': 'SCRC',
-    'first aid': 'First Aid',
-    'lifeguard': 'Lifeguard',
-    'kayak': 'Kayaking',
-    'climbing': 'Rock Climbing',
-    'wilderness first': 'WFR',
-    'leave no trace': 'LNT',
-    'hkid': 'HKID'
+  const analysis = { 
+    nameFound: null, 
+    nameMatchesUser: false, 
+    expiry: null, 
+    issueDate: null, 
+    certType: null,
+    detectedTypeId: null,
+    rawTextSnippet: text.slice(0, 300)
   };
-  for (const [key, label] of Object.entries(typeMap)) {
-    if (lower.includes(key)) { analysis.certType = label; break; }
-  }
 
-  // Dates - look for common patterns
-  const datePatterns = [
-    /(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/g,
-    /(\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2})/g,
-    /(expiry|expires|valid until|valid to|exp\.?)[:\s]*([0-9\/\-\.]+)/gi,
-    /(issued|issue date|given)[:\s]*([0-9\/\-\.]+)/gi
+  // Stronger certificate type detection
+  const typeKeywords = [
+    { id: 'scrc', keywords: ['scrc', 'sexual conviction', 'police check', 'criminal record', 'conviction record'], label: 'SCRC / Police Check' },
+    { id: 'firstaid', keywords: ['first aid', 'first-aid', 'cpr', 'aed'], label: 'First Aid' },
+    { id: 'lifeguard', keywords: ['lifeguard', 'life guard', 'pool lifeguard'], label: 'Lifeguard' },
+    { id: 'kayaking', keywords: ['kayak', 'kayaking', 'canoe', 'paddling'], label: 'Kayaking' },
+    { id: 'climbing', keywords: ['climbing', 'rock climb', 'belay', 'abseil'], label: 'Rock Climbing' },
+    { id: 'wfr', keywords: ['wilderness first', 'wfr', 'wilderness responder'], label: 'WFR' },
+    { id: 'lnt', keywords: ['leave no trace', 'lnt'], label: 'Leave No Trace' },
+    { id: 'hkid', keywords: ['hong kong identity', 'hkid', 'identity card', 'h.k.i.d'], label: 'HKID' },
+    { id: 'passport', keywords: ['passport'], label: 'Passport' },
+    { id: 'visa', keywords: ['visa'], label: 'Visa' }
   ];
-  const dates = [];
-  datePatterns.forEach(p => {
-    let m;
-    while ((m = p.exec(text)) !== null) dates.push(m[1] || m[2]);
-  });
-  if (dates.length) {
-    analysis.expiry = dates.find(d => /expir|valid/i.test(text.slice(Math.max(0, text.indexOf(d)-20), text.indexOf(d)+20))) || dates[dates.length-1];
-    analysis.issueDate = dates[0];
+
+  for (const t of typeKeywords) {
+    if (t.keywords.some(k => lower.includes(k))) {
+      analysis.certType = t.label;
+      analysis.detectedTypeId = t.id;
+      break;
+    }
   }
 
-  // Name matching - simple: look for user's name parts
+  // Better date extraction
+  const dateRegex = /(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2})/g;
+  const allDates = [...text.matchAll(dateRegex)].map(m => m[1]);
+  const expiryContext = /expir|valid until|valid to|expires|expiry|valid from/i;
+  for (const d of allDates) {
+    const idx = text.indexOf(d);
+    const context = text.slice(Math.max(0, idx - 30), idx + 30);
+    if (expiryContext.test(context)) {
+      analysis.expiry = d;
+      break;
+    }
+  }
+  if (!analysis.expiry && allDates.length) analysis.expiry = allDates[allDates.length - 1];
+  if (allDates.length) analysis.issueDate = allDates[0];
+
+  // Stronger name matching
   if (userName) {
-    const parts = userName.split(/\s+/).filter(Boolean);
-    const found = parts.some(p => p.length > 2 && lower.includes(p));
-    if (found) {
+    const parts = userName.split(/\s+/).filter(p => p.length > 1);
+    const matches = parts.filter(p => lower.includes(p));
+    if (matches.length >= Math.min(2, parts.length) || (parts.length === 1 && matches.length === 1)) {
       analysis.nameFound = state.profile.name;
       analysis.nameMatchesUser = true;
     } else {
-      // Try to extract a likely name line (capitalized words)
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 3 && l.length < 40);
-      const nameLine = lines.find(l => /^[A-Z][a-z]+(\s+[A-Z][a-z]+)+$/.test(l));
+      // Try to extract a name-like line
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 4 && l.length < 50);
+      const nameLine = lines.find(l => /^[A-Z][a-zA-Z]+(\s+[A-Z][a-zA-Z]+){1,3}$/.test(l));
       if (nameLine) analysis.nameFound = nameLine;
     }
   }
@@ -1369,15 +1385,41 @@ function renderCalendar() {
   const cal = document.getElementById('calendar');
   if (!cal) return;
   const today = new Date();
-  let html = '';
-  for (let i = 0; i < 28; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    const key = d.toISOString().split('T')[0];
+  let viewDate = state.calViewDate ? new Date(state.calViewDate) : new Date(today.getFullYear(), today.getMonth(), 1);
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const monthName = viewDate.toLocaleString('en', { month: 'long', year: 'numeric' });
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  let html = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <button onclick="changeCalMonth(-1)" style="background:none; border:none; font-size:18px; cursor:pointer;">‹</button>
+      <strong>${monthName}</strong>
+      <button onclick="changeCalMonth(1)" style="background:none; border:none; font-size:18px; cursor:pointer;">›</button>
+    </div>
+    <div class="calendar-grid">
+  `;
+  // Empty cells for start of week
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day" style="visibility:hidden;"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const key = date.toISOString().split('T')[0];
     const status = state.profile.availability[key];
-    html += `<div class="cal-day ${status || ''}" onclick="toggleAvail('${key}')">${d.getDate()}</div>`;
+    const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    html += `<div class="cal-day ${status || ''} ${isPast ? 'past' : ''}" onclick="${isPast ? '' : `toggleAvail('${key}')`}">${d}</div>`;
   }
+  html += '</div>';
   cal.innerHTML = html;
+  state.calViewDate = viewDate.toISOString();
+}
+
+function changeCalMonth(delta) {
+  const current = state.calViewDate ? new Date(state.calViewDate) : new Date();
+  current.setMonth(current.getMonth() + delta);
+  state.calViewDate = current.toISOString();
+  renderCalendar();
 }
 
 function toggleAvail(date) {
