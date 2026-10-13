@@ -730,14 +730,10 @@ function renderShareTab() {
           <span>Health info</span>
           <input type="checkbox" ${c.shared.health ? 'checked' : ''} onchange="toggleShare('${c.id}', 'health', this.checked)">
         </div>
-        <div class="share-toggle">
-          <span>Availability</span>
-          <input type="checkbox" ${c.shared.availability ? 'checked' : ''} onchange="toggleShare('${c.id}', 'availability', this.checked)">
+        <div class="section-title" style="margin-top:12px;">Your rates with this company</div>
+        <div class="card-sub" style="font-size:13px; line-height:1.5;">
+          ${renderRatesSummary(c.id)}
         </div>
-      </div>
-    `).join('')}
-  `;
-}
 
 function renderPayTab() {
   return `
@@ -1228,6 +1224,10 @@ function toggleShare(companyId, key, value) {
 
 function openWorkLogModal() {
   const connected = state.companies.filter(c => c.connected);
+  if (connected.length === 0) {
+    showToast('Connect with a company first (Share tab)');
+    return;
+  }
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
@@ -1240,7 +1240,7 @@ function openWorkLogModal() {
       <div class="form-group">
         <label>Company</label>
         <select id="log-company" onchange="updateRatePreview()">
-          ${connected.length ? connected.map(c => `<option value="${c.id}">${c.name}</option>`).join('') : '<option>No companies connected</option>'}
+          ${connected.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
         </select>
       </div>
       <div class="form-group">
@@ -1276,7 +1276,16 @@ function openWorkLogModal() {
   setTimeout(updateRatePreview, 50);
 }
 
-function updateRatePreview() {
+function renderRatesSummary(companyId) {
+  const rates = COMPANY_RATES[companyId];
+  if (!rates) return 'No rates defined yet.';
+  let lines = [];
+  for (const [role, types] of Object.entries(rates)) {
+    const parts = Object.entries(types).map(([t, r]) => `${t}: HK$${r}`).join(', ');
+    lines.push(`<div><strong>${role}</strong> — ${parts}</div>`);
+  }
+  return lines.join('') || 'No rates defined yet.';
+}
   const companyId = document.getElementById('log-company')?.value;
   const role = document.getElementById('log-role')?.value;
   const type = document.getElementById('log-type')?.value;
@@ -1362,13 +1371,16 @@ function approveRequest(id) {
   const req = state.requests.find(r => r.id === id);
   if (req) {
     req.status = 'approved';
-    // Auto-share the items
-    const c = state.companies.find(x => x.id === req.companyId);
-    if (c) {
-      req.items.forEach(item => { c.shared[item] = true; });
+    let c = state.companies.find(x => x.id === req.companyId);
+    if (!c) {
+      c = { id: req.companyId, name: req.companyName, logo: '🏢', connected: true, shared: {} };
+      state.companies.push(c);
     }
+    c.connected = true;
+    c.shared = c.shared || {};
+    req.items.forEach(item => { c.shared[item] = true; });
     saveState();
-    showToast('Shared with ' + req.companyName);
+    showToast('Shared with ' + req.companyName + (req.items.includes('bank') ? ' (bank details for payroll)' : ''));
     render();
   }
 }
