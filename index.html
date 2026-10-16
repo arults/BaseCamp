@@ -353,6 +353,7 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
+
 const DOC_TYPES = [
   { id: 'scrc', name: 'SCRC / Police Check', icon: '🛡️' },
   { id: 'firstaid', name: 'First Aid', icon: '🩹' },
@@ -390,11 +391,6 @@ const COMPANY_RATES = {
 };
 
 const DEMO_COMPANIES = [
-  { id: 'shed', name: 'The Shed', logo: '🏠' },
-  { id: 'bloom', name: 'Bloom Academy', logo: '🌸' },
-  { id: 'trail', name: 'Trail Outdoor', logo: '⛰️' },
-  { id: 'ridge', name: 'Ridge Camps', logo: '🏕️' }
-];
   { id: 'shed', name: 'The Shed', logo: '🏠' },
   { id: 'bloom', name: 'Bloom Academy', logo: '🌸' },
   { id: 'trail', name: 'Trail Outdoor', logo: '⛰️' },
@@ -734,6 +730,10 @@ function renderShareTab() {
         <div class="card-sub" style="font-size:13px; line-height:1.5;">
           ${renderRatesSummary(c.id)}
         </div>
+      </div>
+    `).join('')}
+  `;
+}
 
 function renderPayTab() {
   return `
@@ -1286,6 +1286,8 @@ function renderRatesSummary(companyId) {
   }
   return lines.join('') || 'No rates defined yet.';
 }
+
+function updateRatePreview() {
   const companyId = document.getElementById('log-company')?.value;
   const role = document.getElementById('log-role')?.value;
   const type = document.getElementById('log-type')?.value;
@@ -1467,6 +1469,7 @@ if (state.user) {
   state.view = 'dashboard';
 }
 render();
+
 </script>
 </body>
 </html>
